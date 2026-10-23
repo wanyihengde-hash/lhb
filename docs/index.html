@@ -3,158 +3,226 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f3f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0f13" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="龙虎榜">
+<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <title>龙虎榜</title>
 <style>
 :root {
-  --bg: #f5f6f8; --card: #ffffff; --text: #16181d; --muted: #6b7280; --faint: #9ca3af;
-  --line: #e6e8ec; --chip: #eceef2; --chip-on: #16181d; --chip-on-text: #ffffff;
-  --up: #d93026; --dn: #12894a; --up-bg: #fdecea; --dn-bg: #e7f5ed;
-  --tag: #f1f2f5; --org: #7c3aed; --org-bg: #f3edff; --hk: #0369a1; --hk-bg: #e6f3fa;
-  --warn-bg: #fff7e6; --warn-text: #8a5a00;
+  --bg: #f2f3f6; --card: #ffffff; --text: #111318; --muted: #6b7280; --faint: #a0a6b1;
+  --line: #e9ebef; --fill: #eceef2; --press: #e4e6eb;
+  --on: #111318; --on-text: #ffffff;
+  --up: #e0352b; --dn: #11904d; --up-bg: #fdecea; --dn-bg: #e5f4ec;
+  --org: #7c3aed; --org-bg: #f1eaff; --hk: #0a6fb0; --hk-bg: #e4f1fa;
+  --warn-bg: #fff5e0; --warn-text: #8a5a00; --hit: #fff2c6;
+  --glass: rgba(242, 243, 246, .82); --shadow: 0 1px 2px rgba(17, 19, 24, .04);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1115; --card: #171a20; --text: #e8eaee; --muted: #9aa1ad; --faint: #6b7280;
-    --line: #262a33; --chip: #222630; --chip-on: #e8eaee; --chip-on-text: #0f1115;
-    --up: #ff5a4f; --dn: #2ebd6b; --up-bg: #3a1a19; --dn-bg: #143222;
-    --tag: #222630; --org: #b794ff; --org-bg: #2a2140; --hk: #6cc4f5; --hk-bg: #16303f;
-    --warn-bg: #33270f; --warn-text: #f3c56b;
+    --bg: #0d0f13; --card: #17191f; --text: #eceef2; --muted: #9aa1ad; --faint: #646b78;
+    --line: #23262e; --fill: #22252d; --press: #2a2e37;
+    --on: #eceef2; --on-text: #0d0f13;
+    --up: #ff5b50; --dn: #2fbf6c; --up-bg: #3b1b19; --dn-bg: #12301f;
+    --org: #b897ff; --org-bg: #2a2142; --hk: #6cc4f5; --hk-bg: #13303f;
+    --warn-bg: #33270f; --warn-text: #f3c56b; --hit: #3b3214;
+    --glass: rgba(13, 15, 19, .8); --shadow: none;
   }
 }
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  font-variant-numeric: tabular-nums;
-  padding-bottom: env(safe-area-inset-bottom);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: contain;
 }
-button, input, select { font: inherit; color: inherit; }
-button { cursor: pointer; }
+button, input, select { font: inherit; color: inherit; touch-action: manipulation; }
+button { cursor: pointer; border: 0; background: none; padding: 0; }
+
+/* ---------- 顶栏（毛玻璃，适配灵动岛） ---------- */
 .top {
-  position: sticky; top: 0; z-index: 5; background: var(--bg);
-  padding: calc(env(safe-area-inset-top) + 10px) 16px 8px;
-  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10;
+  background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
+  padding: calc(env(safe-area-inset-top) + 8px) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+  border-bottom: .5px solid var(--line);
 }
-.bar { display: flex; align-items: center; gap: 10px; }
-.bar h1 { font-size: 20px; margin: 0; letter-spacing: .5px; }
-.meta { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.btn {
-  border: 1px solid var(--line); background: var(--card); border-radius: 999px;
-  padding: 5px 12px; font-size: 13px; white-space: nowrap;
+.bar { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.title { flex: 1; min-width: 0; text-align: left; }
+.title h1 { font-size: 24px; line-height: 1.15; margin: 0; font-weight: 700; letter-spacing: .3px; }
+.meta { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pill {
+  height: 36px; border-radius: 18px; padding: 0 14px; background: var(--card); box-shadow: var(--shadow);
+  font-size: 14px; font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
 }
-.btn:disabled { opacity: .55; }
-.icon-btn { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; }
-.dates { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; scrollbar-width: none; }
+.pill:active { background: var(--press); }
+.pill:disabled { opacity: .5; }
+.round { width: 36px; padding: 0; justify-content: center; font-size: 17px; }
+.spin { display: inline-block; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.dates { display: flex; gap: 6px; overflow-x: auto; margin: 8px -16px 0; padding: 0 16px; scrollbar-width: none; scroll-snap-type: x proximity; }
 .dates::-webkit-scrollbar { display: none; }
 .chip {
-  flex: none; border: 0; background: var(--chip); border-radius: 10px; padding: 5px 10px;
-  text-align: center; line-height: 1.25;
+  flex: none; min-width: 64px; min-height: 44px; border-radius: 12px; padding: 4px 10px;
+  background: var(--card); box-shadow: var(--shadow); text-align: center; line-height: 1.2; scroll-snap-align: start;
 }
-.chip b { display: block; font-size: 14px; font-weight: 600; }
+.chip b { display: block; font-size: 15px; font-weight: 600; }
 .chip small { font-size: 11px; color: var(--muted); }
-.chip.on { background: var(--chip-on); color: var(--chip-on-text); }
-.chip.on small { color: inherit; opacity: .75; }
-main { padding: 12px 16px 24px; max-width: 760px; margin: 0 auto; }
-.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
-.notice button { border: 0; background: none; color: inherit; text-decoration: underline; padding: 0; font-weight: 600; }
-.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-.tile { background: var(--card); border-radius: 12px; padding: 10px 12px; min-width: 0; }
-.tile i { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
-.tile b { display: block; font-size: 17px; margin-top: 2px; white-space: nowrap; }
-.tile small { display: block; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.controls { display: flex; gap: 8px; margin-bottom: 8px; }
-.controls input {
-  flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--card);
-  border-radius: 10px; padding: 8px 12px; outline: none; -webkit-appearance: none;
+.chip.on { background: var(--on); color: var(--on-text); }
+.chip.on small { color: inherit; opacity: .7; }
+
+/* ---------- 主体 ---------- */
+main {
+  padding: 12px max(16px, env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  max-width: 760px; margin: 0 auto;
 }
-.controls select { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 8px 8px; max-width: 40%; }
+.notice { display: flex; gap: 10px; align-items: flex-start; background: var(--warn-bg); color: var(--warn-text); border-radius: 14px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
+.notice p { margin: 0; flex: 1; }
+.notice .link { color: inherit; text-decoration: underline; font-weight: 600; }
+.notice .x { font-size: 18px; line-height: 1; padding: 0 2px; opacity: .7; min-width: 28px; min-height: 28px; }
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.tile { background: var(--card); border-radius: 14px; padding: 10px 12px; min-width: 0; box-shadow: var(--shadow); }
+.tile i { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.tile b { display: block; font-size: 19px; margin-top: 1px; white-space: nowrap; letter-spacing: -.2px; }
+.tile small { display: block; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.controls { display: flex; gap: 8px; margin-bottom: 10px; }
+.search { flex: 1; min-width: 0; position: relative; }
+.search input {
+  width: 100%; height: 40px; border: 0; background: var(--card); border-radius: 12px; box-shadow: var(--shadow);
+  padding: 0 12px 0 34px; outline: none; -webkit-appearance: none; appearance: none;
+  font-size: 16px; /* 小于 16px 时 iPhone 会自动放大页面 */
+}
+.search svg { position: absolute; left: 11px; top: 12px; width: 16px; height: 16px; color: var(--faint); }
+.controls select {
+  height: 40px; border: 0; background: var(--card); border-radius: 12px; box-shadow: var(--shadow);
+  padding: 0 28px 0 12px; font-size: 16px; -webkit-appearance: none; appearance: none; max-width: 42%;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 17px, calc(100% - 11px) 17px; background-size: 5px 5px; background-repeat: no-repeat;
+}
 .tabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 12px; padding: 0 16px; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
-.tabs button { flex: none; border: 0; background: none; padding: 6px 10px; border-radius: 8px; color: var(--muted); font-size: 14px; }
-.tabs button.on { background: var(--card); color: var(--text); font-weight: 600; }
-.tabs button span { font-size: 11px; margin-left: 3px; color: var(--faint); }
-.card { background: var(--card); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
-.head { display: block; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px 10px; }
-.l1 { display: flex; align-items: baseline; gap: 6px; }
-.name { font-size: 16px; font-weight: 600; white-space: nowrap; }
-.code { font-size: 12px; color: var(--muted); }
-.tag { font-size: 11px; border-radius: 5px; padding: 0 5px; line-height: 17px; align-self: center; white-space: nowrap; }
+.tabs button { flex: none; height: 34px; padding: 0 12px; border-radius: 17px; color: var(--muted); font-size: 14px; background: var(--fill); }
+.tabs button.on { background: var(--on); color: var(--on-text); font-weight: 600; }
+.tabs button span { font-size: 11px; margin-left: 4px; opacity: .7; }
+
+/* ---------- 卡片 ---------- */
+.card { background: var(--card); border-radius: 16px; margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow); }
+.head { display: block; width: 100%; text-align: left; padding: 13px 14px 11px; }
+.head:active { background: var(--press); }
+.l1 { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.code { font-size: 12px; color: var(--muted); flex: none; }
+.tag { flex: none; font-size: 11px; border-radius: 5px; padding: 0 5px; line-height: 18px; font-weight: 500; }
 .tag.org { color: var(--org); background: var(--org-bg); }
 .tag.hk { color: var(--hk); background: var(--hk-bg); }
-.chg { margin-left: auto; font-weight: 700; font-size: 15px; padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+.chg { margin-left: auto; flex: none; font-weight: 700; font-size: 15px; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
 .chg.up { color: var(--up); background: var(--up-bg); }
 .chg.dn { color: var(--dn); background: var(--dn-bg); }
-.l2 { display: flex; gap: 10px; color: var(--muted); font-size: 12px; margin-top: 2px; flex-wrap: wrap; }
-.l3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; }
-.kv i { display: block; font-style: normal; font-size: 11px; color: var(--faint); }
-.kv b { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.l2 { display: flex; gap: 10px; color: var(--muted); font-size: 12px; margin-top: 3px; white-space: nowrap; overflow: hidden; }
+.flow { margin-top: 10px; }
+.flow-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.flow-top .net { font-size: 21px; font-weight: 700; letter-spacing: -.3px; }
+.flow-top small { font-size: 12px; color: var(--muted); font-weight: 400; margin-right: 4px; letter-spacing: 0; }
+.flow-top .orgv { font-size: 14px; font-weight: 600; }
+.meter { display: flex; gap: 2px; height: 6px; margin: 7px 0 5px; }
+.meter i { border-radius: 3px; min-width: 3px; }
+.meter .b { background: var(--up); }
+.meter .s { background: var(--dn); }
+.flow-bot { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.why { margin-top: 9px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.why .r { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.why .chev { flex: none; color: var(--faint); font-size: 13px; transition: transform .2s; }
+.head[aria-expanded="true"] .chev { transform: rotate(90deg); }
+.explain { margin-top: 6px; display: inline-block; font-size: 12px; background: var(--fill); border-radius: 6px; padding: 1px 7px; }
 .up { color: var(--up); }
 .dn { color: var(--dn); }
-.why { margin-top: 8px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; }
-.why em { font-style: normal; color: var(--text); background: var(--tag); border-radius: 5px; padding: 0 6px; }
-.more { color: var(--faint); }
-.body { border-top: 1px solid var(--line); padding: 4px 14px 12px; }
-.entry h4 { margin: 10px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
-.entry h4 span { font-weight: 400; }
-.seats { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
-.seats th { text-align: right; font-weight: 400; color: var(--faint); font-size: 11px; padding: 6px 0 2px; }
+
+.body { border-top: .5px solid var(--line); padding: 2px 14px 14px; }
+.entry h4 { margin: 12px 0 2px; font-size: 13px; font-weight: 600; }
+.entry .sub { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.seats { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+.seats col.n { width: 44%; }
+.seats th { text-align: right; font-weight: 500; color: var(--faint); font-size: 11px; padding: 10px 0 3px; }
 .seats th:first-child { text-align: left; }
-.seats td { padding: 5px 0; border-top: 1px solid var(--line); text-align: right; vertical-align: top; white-space: nowrap; }
-.seats td:first-child { text-align: left; white-space: normal; word-break: break-all; padding-right: 6px; }
-.seats col.n { width: 46%; }
-.seats tr.hit td { background: var(--warn-bg); }
+.seats td { padding: 7px 0; border-top: .5px solid var(--line); text-align: right; vertical-align: top; white-space: nowrap; }
+.seats td:first-child { text-align: left; white-space: normal; word-break: break-all; padding-right: 8px; line-height: 1.35; }
+.seats tr.hit td { background: var(--hit); }
 .seat-org { color: var(--org); font-weight: 600; }
 .seat-hk { color: var(--hk); font-weight: 600; }
-.src { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--muted); }
-.empty { text-align: center; color: var(--muted); padding: 40px 0; }
-footer { text-align: center; color: var(--faint); font-size: 11px; margin-top: 16px; }
+.src { display: inline-flex; align-items: center; min-height: 36px; margin-top: 6px; font-size: 13px; color: var(--muted); text-decoration: none; }
+
+.empty { text-align: center; color: var(--muted); padding: 48px 0; line-height: 2; }
+.skel { height: 148px; border-radius: 16px; margin-bottom: 10px; background: linear-gradient(90deg, var(--card) 25%, var(--fill) 50%, var(--card) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+footer { text-align: center; color: var(--faint); font-size: 11px; margin-top: 18px; }
+
+/* ---------- 浮层 ---------- */
+#ptr {
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 6px); z-index: 20; transform: translate(-50%, -60px);
+  width: 36px; height: 36px; border-radius: 18px; background: var(--card); box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+  display: grid; place-items: center; font-size: 17px; opacity: 0; pointer-events: none; transition: transform .2s, opacity .2s;
+}
+#ptr.drag { transition: none; }
+#ptr.ready { color: var(--up); }
+#totop {
+  position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 9;
+  width: 44px; height: 44px; border-radius: 22px; background: var(--card); box-shadow: 0 2px 12px rgba(0, 0, 0, .18);
+  font-size: 18px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+#totop.show { opacity: 1; pointer-events: auto; }
 #toast {
-  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);
-  background: var(--chip-on); color: var(--chip-on-text); padding: 8px 14px; border-radius: 10px;
-  font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px);
+  position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 30;
+  background: var(--on); color: var(--on-text); padding: 9px 16px; border-radius: 12px;
+  font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px); text-align: center;
 }
 #toast.show { opacity: 1; }
-@media (max-width: 360px) { .l3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 360px) { .summary { grid-template-columns: 1fr 1fr; } .summary .tile:last-child { grid-column: span 2; } }
 </style>
 </head>
 <body>
+<div id="ptr">↻</div>
 <header class="top">
   <div class="bar">
-    <h1>龙虎榜</h1>
-    <div class="meta" id="meta">加载中…</div>
-    <button class="btn icon-btn" id="reload" aria-label="刷新">↻</button>
-    <button class="btn" id="direct">直连东财</button>
+    <button class="title" id="title" aria-label="回到顶部">
+      <h1>龙虎榜</h1>
+      <div class="meta" id="meta">加载中…</div>
+    </button>
+    <button class="pill round" id="reload" aria-label="刷新"><span>↻</span></button>
+    <button class="pill" id="direct">直连东财</button>
   </div>
   <div class="dates" id="dates"></div>
 </header>
 <main>
+  <div class="notice" id="hint" hidden></div>
   <div class="notice" id="notice" hidden></div>
   <section class="summary" id="summary"></section>
   <div class="controls">
-    <input id="q" type="search" placeholder="搜股票 / 代码 / 营业部" autocomplete="off">
+    <label class="search">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
+      <input id="q" type="search" placeholder="股票、代码、营业部" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+    </label>
     <select id="sort" aria-label="排序">
-      <option value="net-desc">净买额 ↓</option>
-      <option value="net-asc">净卖额 ↓</option>
-      <option value="chg-desc">涨幅 ↓</option>
-      <option value="chg-asc">跌幅 ↓</option>
-      <option value="org-desc">机构净买 ↓</option>
-      <option value="deal-desc">榜单成交 ↓</option>
-      <option value="turn-desc">换手率 ↓</option>
+      <option value="net-desc">净买额</option>
+      <option value="net-asc">净卖额</option>
+      <option value="chg-desc">涨幅</option>
+      <option value="chg-asc">跌幅</option>
+      <option value="org-desc">机构净买</option>
+      <option value="deal-desc">榜单成交</option>
+      <option value="turn-desc">换手率</option>
     </select>
   </div>
   <nav class="tabs" id="tabs"></nav>
-  <div id="list"></div>
+  <div id="list"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
   <footer>数据来源：东方财富 · 本页只做转存加速，不构成投资建议</footer>
 </main>
+<button id="totop" aria-label="回到顶部">↑</button>
 <div id="toast"></div>
 <script>
 const API = 'https://datacenter-web.eastmoney.com/api/data/v1/get';
@@ -172,6 +240,8 @@ const FILTERS = [
   ['org', '机构', s => s.hasOrg],
   ['hk', '沪深股通', s => s.hasHK],
 ];
+const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const STANDALONE = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
 const $ = sel => document.querySelector(sel);
 const store = {
@@ -179,7 +249,7 @@ const store = {
   set(k, v) { try { localStorage.setItem('lhb.' + k, JSON.stringify(v)); } catch {} },
 };
 const S = {
-  index: null, date: null, day: null, stocks: [], source: 'site',
+  index: null, date: null, day: null, stocks: [], source: 'site', busy: false,
   filter: store.get('filter') || 'all', sort: store.get('sort') || 'net-desc', q: '', open: new Set(),
 };
 
@@ -221,6 +291,10 @@ function toast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function setBusy(on) {
+  S.busy = on;
+  $('#reload span').classList.toggle('spin', on);
 }
 
 // ---------- 网络 ----------
@@ -319,8 +393,8 @@ function renderDates() {
 
 function renderMeta() {
   if (!S.day) return;
-  const how = S.source === 'direct' ? '直连于' : '同步于';
-  $('#meta').textContent = `${how} ${localTime(S.day.updated)}`;
+  const how = S.source === 'direct' ? '直连东财于' : '同步于';
+  $('#meta').textContent = `${S.day.date} ${weekday(S.day.date)} · ${how} ${localTime(S.day.updated)}`;
 }
 
 function renderNotice() {
@@ -330,7 +404,15 @@ function renderNotice() {
   const n = $('#notice');
   n.hidden = !waiting;
   if (waiting) {
-    n.innerHTML = '今天（北京时间）的龙虎榜东财一般 16:30–18:00 陆续发布，本站每半小时左右自动同步。等不及可以 <button data-act="direct">直连东财</button> 试试。';
+    n.innerHTML = '<p>今天（北京时间）的龙虎榜东财一般 16:30–18:00 陆续发布，本站每半小时左右自动同步。等不及可以 <button class="link" data-act="direct">直连东财</button> 试试。</p>';
+  }
+}
+
+function renderHint() {
+  const h = $('#hint');
+  h.hidden = !(IOS && !STANDALONE && !store.get('hintClosed'));
+  if (!h.hidden) {
+    h.innerHTML = '<p>在 Safari 里点底部 <b>分享</b> 按钮 → <b>添加到主屏幕</b>，以后像 App 一样全屏打开，没网也能看上次的数据。</p><button class="x" data-act="hint" aria-label="关闭">×</button>';
   }
 }
 
@@ -341,9 +423,9 @@ function renderSummary() {
   const orgs = st.filter(s => s.hasOrg);
   const org = orgs.reduce((a, s) => a + s.orgNet, 0);
   $('#summary').innerHTML = `
-    <div class="tile"><i>上榜</i><b>${st.length}只</b><small><span class="up">${up}涨</span> · <span class="dn">${dn}跌</span></small></div>
-    <div class="tile"><i>榜单净买</i><b class="${cls(net)}">${amt(net, true)}</b><small>按当日上榜口径</small></div>
-    <div class="tile"><i>机构净买</i><b class="${cls(org)}">${amt(org, true)}</b><small>${orgs.length}只有机构席位</small></div>`;
+    <div class="tile"><i>上榜</i><b>${st.length}<small style="display:inline;font-size:13px;color:var(--muted)"> 只</small></b><small><span class="up">${up}涨</span> · <span class="dn">${dn}跌</span></small></div>
+    <div class="tile"><i>榜单净买</i><b class="${cls(net)}">${amt(net, true)}</b><small>当日上榜口径</small></div>
+    <div class="tile"><i>机构净买</i><b class="${cls(org)}">${amt(org, true)}</b><small>${orgs.length} 只有机构</small></div>`;
 }
 
 function visible() {
@@ -384,30 +466,36 @@ function bodyHTML(s) {
   const head = label => `<tr><th>${label}</th><th>买入</th><th>卖出</th><th>净额</th></tr>`;
   return s.entries.map(e => `
     <div class="entry">
-      <h4>${esc(e.reason)} <span>· 净 <b class="${cls(e.net)}">${amt(e.net, true)}</b> · 占成交 ${pct(e.dealRatio, false)}</span></h4>
+      <h4>${esc(e.reason)}</h4>
+      <div class="sub">净买 <b class="${cls(e.net)}">${amt(e.net, true)}</b> · 买 ${amt(e.buy)} · 卖 ${amt(e.sell)} · 占成交 ${pct(e.dealRatio, false)}</div>
       <table class="seats"><colgroup><col class="n"><col><col><col></colgroup>
         ${head('买入前五')}${seatRows(e.buys, q)}
         ${head('卖出前五')}${seatRows(e.sells, q)}
       </table>
     </div>`).join('') +
-    `<a class="src" href="https://data.eastmoney.com/stock/lhb/${esc(s.code)}.html" target="_blank" rel="noopener">东财原页（可能较慢）→</a>`;
+    `<a class="src" href="https://data.eastmoney.com/stock/lhb/${esc(s.code)}.html" target="_blank" rel="noopener">东财原页（可能较慢）›</a>`;
 }
 
 function cardHTML(s) {
   const open = S.open.has(s.code) || s.seatHit;
   const tags = (s.hasOrg ? '<span class="tag org">机构</span>' : '') + (s.hasHK ? '<span class="tag hk">股通</span>' : '');
-  const reasons = s.entries.length > 1 ? `<span class="more">+${s.entries.length - 1}个原因</span>` : '';
+  const reasons = s.entries.length > 1 ? ` 等${s.entries.length}项` : '';
+  const total = (s.buy || 0) + (s.sell || 0);
+  const bp = total ? Math.round(((s.buy || 0) / total) * 100) : 50;
   return `<article class="card" data-code="${esc(s.code)}">
     <button class="head" aria-expanded="${open}">
       <div class="l1"><span class="name">${esc(s.name)}</span><span class="code">${esc(s.code)}</span>${tags}<span class="chg ${cls(s.chg)}">${pct(s.chg)}</span></div>
       <div class="l2"><span>收 ${s.close ?? '—'}</span><span>换手 ${pct(s.turn, false)}</span><span>成交 ${amt(s.amt)}</span><span>流通 ${amt(s.mcap)}</span></div>
-      <div class="l3">
-        <div class="kv"><i>净买</i><b class="${cls(s.net)}">${amt(s.net, true)}</b></div>
-        <div class="kv"><i>榜单买入</i><b>${amt(s.buy)}</b></div>
-        <div class="kv"><i>榜单卖出</i><b>${amt(s.sell)}</b></div>
-        <div class="kv"><i>机构净买</i><b class="${cls(s.orgNet)}">${s.hasOrg ? amt(s.orgNet, true) : '—'}</b></div>
+      <div class="flow">
+        <div class="flow-top">
+          <span class="net ${cls(s.net)}"><small>净买</small>${amt(s.net, true)}</span>
+          ${s.hasOrg ? `<span class="orgv ${cls(s.orgNet)}"><small>机构</small>${amt(s.orgNet, true)}</span>` : ''}
+        </div>
+        <div class="meter"><i class="b" style="flex:${bp}"></i><i class="s" style="flex:${100 - bp}"></i></div>
+        <div class="flow-bot"><span>买 ${amt(s.buy)}</span><span>卖 ${amt(s.sell)}</span></div>
       </div>
-      <div class="why"><span>${esc(s.entries[0].reason)}</span>${reasons}${s.explain ? `<em>${esc(s.explain)}</em>` : ''}</div>
+      <div class="why"><span class="r">${esc(s.entries[0].reason)}${reasons}</span><span class="chev">›</span></div>
+      ${s.explain ? `<span class="explain">${esc(s.explain)}</span>` : ''}
     </button>
     <div class="body"${open ? '' : ' hidden'}>${open ? bodyHTML(s) : ''}</div>
   </article>`;
@@ -439,23 +527,30 @@ async function loadIndex() {
 async function loadDay(date) {
   const entry = S.index.dates.find(x => x.d === date) || S.index.dates[0];
   if (!entry) throw new Error('暂无数据');
-  $('#meta').textContent = `加载 ${entry.d}…`;
-  const day = await getJSON(`data/${entry.d}.json?v=${encodeURIComponent(entry.u)}`, { ms: 12000, tries: 3 });
-  showDay(day, 'site');
+  setBusy(true);
+  try {
+    const day = await getJSON(`data/${entry.d}.json?v=${encodeURIComponent(entry.u)}`, { ms: 12000, tries: 3 });
+    showDay(day, 'site');
+  } finally {
+    setBusy(false);
+  }
 }
 async function start() {
+  setBusy(true);
   try {
     await loadIndex();
     await loadDay(location.hash.slice(1));
   } catch (e) {
     $('#meta').textContent = '加载失败';
-    $('#list').innerHTML = `<div class="empty">网络不太好，没拿到数据。<br><br><button class="btn" data-act="reload">重试</button> <button class="btn" data-act="direct">直连东财</button></div>`;
+    $('#list').innerHTML = `<div class="empty">网络不太好，没拿到数据。<br><button class="pill" data-act="reload">重试</button> <button class="pill" data-act="direct">直连东财</button></div>`;
+  } finally {
+    setBusy(false);
   }
 }
 
 async function direct() {
   const btn = $('#direct');
-  btn.disabled = true; btn.textContent = '直连中…';
+  btn.disabled = true; btn.textContent = '直连中…'; setBusy(true);
   try {
     const latest = await em({ reportName: 'RPT_DAILYBILLBOARD_DETAILSNEW', columns: 'TRADE_DATE', pageSize: 1, sortColumns: 'TRADE_DATE', sortTypes: '-1' });
     const date = latest.data[0].TRADE_DATE.slice(0, 10);
@@ -470,7 +565,7 @@ async function direct() {
   } catch (e) {
     toast('直连失败：到东财的网络不通，稍后再试，或等本站自动同步');
   } finally {
-    btn.disabled = false; btn.textContent = '直连东财';
+    btn.disabled = false; btn.textContent = '直连东财'; setBusy(false);
   }
 }
 
@@ -478,7 +573,7 @@ async function direct() {
 document.addEventListener('click', e => {
   const chip = e.target.closest('.chip');
   if (chip) {
-    if (S.index) loadDay(chip.dataset.d).catch(() => toast('这一天的数据没拿到，再点一次试试'));
+    if (S.index) loadDay(chip.dataset.d).then(() => scrollTo({ top: 0 })).catch(() => toast('这一天的数据没拿到，再点一次试试'));
     return;
   }
   const tab = e.target.closest('#tabs button');
@@ -500,23 +595,62 @@ document.addEventListener('click', e => {
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'direct') direct();
   if (act === 'reload') start();
+  if (act === 'hint') { store.set('hintClosed', true); renderHint(); }
 });
 $('#direct').addEventListener('click', direct);
-$('#reload').addEventListener('click', () => { toast('刷新中…'); start(); });
+$('#reload').addEventListener('click', () => { if (!S.busy) start(); });
+$('#title').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
+$('#totop').addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' }));
 $('#sort').addEventListener('change', e => { S.sort = e.target.value; store.set('sort', S.sort); renderList(); });
 let qTimer;
 $('#q').addEventListener('input', e => {
   clearTimeout(qTimer);
   qTimer = setTimeout(() => { S.q = e.target.value; renderList(); }, 150);
 });
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); }); // 收起键盘
 window.addEventListener('hashchange', () => {
   const d = location.hash.slice(1);
   if (S.index && d && d !== S.date) loadDay(d).catch(() => {});
+});
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { $('#totop').classList.toggle('show', scrollY > 1200); ticking = false; });
+}, { passive: true });
+
+// 主屏幕全屏模式下没有系统下拉刷新，这里补一个
+if (STANDALONE) {
+  const ptr = $('#ptr');
+  let y0 = null, dy = 0;
+  addEventListener('touchstart', e => { y0 = scrollY <= 0 && !S.busy ? e.touches[0].clientY : null; }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    ptr.classList.add('drag');
+    ptr.style.opacity = Math.min(dy / 90, 1);
+    ptr.style.transform = `translate(-50%, ${Math.min(dy * 0.5, 56) - 10}px) rotate(${dy * 2}deg)`;
+    ptr.classList.toggle('ready', dy > 90);
+  }, { passive: true });
+  addEventListener('touchend', () => {
+    if (y0 == null) return;
+    ptr.classList.remove('drag', 'ready');
+    ptr.style.opacity = ''; ptr.style.transform = '';
+    if (dy > 90) { toast('刷新中…'); start(); }
+    y0 = null; dy = 0;
+  });
+}
+// 从后台切回来时，如果放了半小时以上就自动刷新
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (hiddenAt && Date.now() - hiddenAt > 30 * 60 * 1000 && !S.busy) start();
 });
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+renderHint();
 start();
 </script>
 </body>
