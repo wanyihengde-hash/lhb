@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="龙虎榜">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>龙虎榜</title>
+<style>
+:root {
+  --bg: #f5f6f8; --card: #ffffff; --text: #16181d; --muted: #6b7280; --faint: #9ca3af;
+  --line: #e6e8ec; --chip: #eceef2; --chip-on: #16181d; --chip-on-text: #ffffff;
+  --up: #d93026; --dn: #12894a; --up-bg: #fdecea; --dn-bg: #e7f5ed;
+  --tag: #f1f2f5; --org: #7c3aed; --org-bg: #f3edff; --hk: #0369a1; --hk-bg: #e6f3fa;
+  --warn-bg: #fff7e6; --warn-text: #8a5a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --card: #171a20; --text: #e8eaee; --muted: #9aa1ad; --faint: #6b7280;
+    --line: #262a33; --chip: #222630; --chip-on: #e8eaee; --chip-on-text: #0f1115;
+    --up: #ff5a4f; --dn: #2ebd6b; --up-bg: #3a1a19; --dn-bg: #143222;
+    --tag: #222630; --org: #b794ff; --org-bg: #2a2140; --hk: #6cc4f5; --hk-bg: #16303f;
+    --warn-bg: #33270f; --warn-text: #f3c56b;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-variant-numeric: tabular-nums;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+.top {
+  position: sticky; top: 0; z-index: 5; background: var(--bg);
+  padding: calc(env(safe-area-inset-top) + 10px) 16px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.bar { display: flex; align-items: center; gap: 10px; }
+.bar h1 { font-size: 20px; margin: 0; letter-spacing: .5px; }
+.meta { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn {
+  border: 1px solid var(--line); background: var(--card); border-radius: 999px;
+  padding: 5px 12px; font-size: 13px; white-space: nowrap;
+}
+.btn:disabled { opacity: .55; }
+.icon-btn { width: 32px; height: 32px; padding: 0; display: grid; place-items: center; }
+.dates { display: flex; gap: 6px; overflow-x: auto; margin: 10px -16px 0; padding: 0 16px 2px; scrollbar-width: none; }
+.dates::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; border: 0; background: var(--chip); border-radius: 10px; padding: 5px 10px;
+  text-align: center; line-height: 1.25;
+}
+.chip b { display: block; font-size: 14px; font-weight: 600; }
+.chip small { font-size: 11px; color: var(--muted); }
+.chip.on { background: var(--chip-on); color: var(--chip-on-text); }
+.chip.on small { color: inherit; opacity: .75; }
+main { padding: 12px 16px 24px; max-width: 760px; margin: 0 auto; }
+.notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
+.notice button { border: 0; background: none; color: inherit; text-decoration: underline; padding: 0; font-weight: 600; }
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.tile { background: var(--card); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.tile i { display: block; font-style: normal; font-size: 12px; color: var(--muted); }
+.tile b { display: block; font-size: 17px; margin-top: 2px; white-space: nowrap; }
+.tile small { display: block; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.controls { display: flex; gap: 8px; margin-bottom: 8px; }
+.controls input {
+  flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--card);
+  border-radius: 10px; padding: 8px 12px; outline: none; -webkit-appearance: none;
+}
+.controls select { border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 8px 8px; max-width: 40%; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 12px; padding: 0 16px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { flex: none; border: 0; background: none; padding: 6px 10px; border-radius: 8px; color: var(--muted); font-size: 14px; }
+.tabs button.on { background: var(--card); color: var(--text); font-weight: 600; }
+.tabs button span { font-size: 11px; margin-left: 3px; color: var(--faint); }
+.card { background: var(--card); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+.head { display: block; width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px 10px; }
+.l1 { display: flex; align-items: baseline; gap: 6px; }
+.name { font-size: 16px; font-weight: 600; white-space: nowrap; }
+.code { font-size: 12px; color: var(--muted); }
+.tag { font-size: 11px; border-radius: 5px; padding: 0 5px; line-height: 17px; align-self: center; white-space: nowrap; }
+.tag.org { color: var(--org); background: var(--org-bg); }
+.tag.hk { color: var(--hk); background: var(--hk-bg); }
+.chg { margin-left: auto; font-weight: 700; font-size: 15px; padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+.chg.up { color: var(--up); background: var(--up-bg); }
+.chg.dn { color: var(--dn); background: var(--dn-bg); }
+.l2 { display: flex; gap: 10px; color: var(--muted); font-size: 12px; margin-top: 2px; flex-wrap: wrap; }
+.l3 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; }
+.kv i { display: block; font-style: normal; font-size: 11px; color: var(--faint); }
+.kv b { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.up { color: var(--up); }
+.dn { color: var(--dn); }
+.why { margin-top: 8px; font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.why em { font-style: normal; color: var(--text); background: var(--tag); border-radius: 5px; padding: 0 6px; }
+.more { color: var(--faint); }
+.body { border-top: 1px solid var(--line); padding: 4px 14px 12px; }
+.entry h4 { margin: 10px 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.entry h4 span { font-weight: 400; }
+.seats { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+.seats th { text-align: right; font-weight: 400; color: var(--faint); font-size: 11px; padding: 6px 0 2px; }
+.seats th:first-child { text-align: left; }
+.seats td { padding: 5px 0; border-top: 1px solid var(--line); text-align: right; vertical-align: top; white-space: nowrap; }
+.seats td:first-child { text-align: left; white-space: normal; word-break: break-all; padding-right: 6px; }
+.seats col.n { width: 46%; }
+.seats tr.hit td { background: var(--warn-bg); }
+.seat-org { color: var(--org); font-weight: 600; }
+.seat-hk { color: var(--hk); font-weight: 600; }
+.src { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.empty { text-align: center; color: var(--muted); padding: 40px 0; }
+footer { text-align: center; color: var(--faint); font-size: 11px; margin-top: 16px; }
+#toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: var(--chip-on); color: var(--chip-on-text); padding: 8px 14px; border-radius: 10px;
+  font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px);
+}
+#toast.show { opacity: 1; }
+@media (max-width: 360px) { .l3 { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <h1>龙虎榜</h1>
+    <div class="meta" id="meta">加载中…</div>
+    <button class="btn icon-btn" id="reload" aria-label="刷新">↻</button>
+    <button class="btn" id="direct">直连东财</button>
+  </div>
+  <div class="dates" id="dates"></div>
+</header>
+<main>
+  <div class="notice" id="notice" hidden></div>
+  <section class="summary" id="summary"></section>
+  <div class="controls">
+    <input id="q" type="search" placeholder="搜股票 / 代码 / 营业部" autocomplete="off">
+    <select id="sort" aria-label="排序">
+      <option value="net-desc">净买额 ↓</option>
+      <option value="net-asc">净卖额 ↓</option>
+      <option value="chg-desc">涨幅 ↓</option>
+      <option value="chg-asc">跌幅 ↓</option>
+      <option value="org-desc">机构净买 ↓</option>
+      <option value="deal-desc">榜单成交 ↓</option>
+      <option value="turn-desc">换手率 ↓</option>
+    </select>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+  <div id="list"></div>
+  <footer>数据来源：东方财富 · 本页只做转存加速，不构成投资建议</footer>
+</main>
+<div id="toast"></div>
+<script>
+const API = 'https://datacenter-web.eastmoney.com/api/data/v1/get';
+// 与 scripts/fetch_lhb.py 保持一致
+const DETAIL_COLS = 'SECURITY_CODE,SECURITY_NAME_ABBR,TRADE_ID,EXPLANATION,EXPLAIN,' +
+  'CLOSE_PRICE,CHANGE_RATE,TURNOVERRATE,BILLBOARD_NET_AMT,BILLBOARD_BUY_AMT,' +
+  'BILLBOARD_SELL_AMT,BILLBOARD_DEAL_AMT,ACCUM_AMOUNT,DEAL_NET_RATIO,DEAL_AMOUNT_RATIO,' +
+  'FREE_MARKET_CAP,TRADE_MARKET';
+const SEAT_COLS = 'TRADE_ID,SECURITY_CODE,OPERATEDEPT_NAME,BUY,SELL,NET';
+const WEEK = '日一二三四五六';
+const FILTERS = [
+  ['all', '全部', () => true],
+  ['buy', '净买入', s => s.net > 0],
+  ['sell', '净卖出', s => s.net < 0],
+  ['org', '机构', s => s.hasOrg],
+  ['hk', '沪深股通', s => s.hasHK],
+];
+
+const $ = sel => document.querySelector(sel);
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem('lhb.' + k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem('lhb.' + k, JSON.stringify(v)); } catch {} },
+};
+const S = {
+  index: null, date: null, day: null, stocks: [], source: 'site',
+  filter: store.get('filter') || 'all', sort: store.get('sort') || 'net-desc', q: '', open: new Set(),
+};
+
+// ---------- 格式化 ----------
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cls = v => (v > 0 ? 'up' : v < 0 ? 'dn' : '');
+function amt(v, sign = false) {
+  if (v == null || isNaN(v)) return '—';
+  const a = Math.abs(v);
+  const s = a >= 1e8 ? (a / 1e8).toFixed(a >= 1e10 ? 1 : 2) + '亿' : a >= 1e4 ? Math.round(a / 1e4) + '万' : String(Math.round(a));
+  return (v < 0 ? '-' : sign && v > 0 ? '+' : '') + s;
+}
+const pct = (v, sign = true) => (v == null || isNaN(v) ? '—' : (sign && v > 0 ? '+' : '') + Number(v).toFixed(2) + '%');
+const md = d => d.slice(5);
+const weekday = d => '周' + WEEK[new Date(d + 'T00:00:00Z').getUTCDay()];
+const localTime = iso => {
+  const t = new Date(iso);
+  const sameDay = t.toDateString() === new Date().toDateString();
+  const hm = t.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return sameDay ? hm : `${t.getMonth() + 1}/${t.getDate()} ${hm}`;
+};
+function shortSeat(n) {
+  return String(n || '')
+    .replace(/股份有限公司|有限责任公司|有限公司/g, '')
+    .replace(/证券营业部$|营业部$/, '')
+    .replace(/分公司$/, '分');
+}
+function beijingNow() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short',
+  }).formatToParts(new Date()).map(x => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) % 24, weekend: p.weekday === 'Sat' || p.weekday === 'Sun' };
+}
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ---------- 网络 ----------
+async function getJSON(url, { ms = 10000, tries = 2, cache } = {}) {
+  let err;
+  for (let i = 0; i < tries; i++) {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), ms);
+    try {
+      const r = await fetch(url, { signal: ctl.signal, cache });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } catch (e) {
+      err = e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw err;
+}
+async function em(params) {
+  const q = new URLSearchParams({ source: 'WEB', client: 'WEB', ...params });
+  const b = await getJSON(`${API}?${q}`, { ms: 15000, tries: 2 });
+  if (!b.result) {
+    if (b.code === 9201) return { data: [], pages: 1 };
+    throw new Error(b.message || '东财返回异常');
+  }
+  return b.result;
+}
+async function emAll(reportName, columns, filter) {
+  let out = [];
+  for (let pageNumber = 1; ; pageNumber++) {
+    const r = await em({ reportName, columns, filter, pageSize: 500, pageNumber });
+    out = out.concat(r.data);
+    if (pageNumber >= r.pages) return out;
+  }
+}
+
+// ---------- 数据整理 ----------
+function build(day) {
+  const seats = new Map();
+  const slot = id => {
+    id = String(id);
+    if (!seats.has(id)) seats.set(id, { buys: [], sells: [] });
+    return seats.get(id);
+  };
+  for (const r of day.buy) slot(r.TRADE_ID).buys.push(r);
+  for (const r of day.sell) slot(r.TRADE_ID).sells.push(r);
+  const net = r => r.NET ?? (r.BUY || 0) - (r.SELL || 0);
+
+  const byCode = new Map();
+  for (const r of day.detail) {
+    let s = byCode.get(r.SECURITY_CODE);
+    if (!s) {
+      s = {
+        code: r.SECURITY_CODE, name: r.SECURITY_NAME_ABBR, close: r.CLOSE_PRICE, chg: r.CHANGE_RATE,
+        turn: r.TURNOVERRATE, mcap: r.FREE_MARKET_CAP, amt: r.ACCUM_AMOUNT, market: r.TRADE_MARKET, entries: [],
+      };
+      byCode.set(r.SECURITY_CODE, s);
+    }
+    const st = slot(r.TRADE_ID);
+    s.entries.push({
+      reason: r.EXPLANATION, explain: r.EXPLAIN, net: r.BILLBOARD_NET_AMT, buy: r.BILLBOARD_BUY_AMT,
+      sell: r.BILLBOARD_SELL_AMT, deal: r.BILLBOARD_DEAL_AMT, netRatio: r.DEAL_NET_RATIO,
+      dealRatio: r.DEAL_AMOUNT_RATIO, multi: /连续|三个交易日/.test(r.EXPLANATION || ''),
+      buys: st.buys.sort((a, b) => (b.BUY || 0) - (a.BUY || 0)),
+      sells: st.sells.sort((a, b) => (b.SELL || 0) - (a.SELL || 0)),
+    });
+  }
+  for (const s of byCode.values()) {
+    s.entries.sort((a, b) => a.multi - b.multi); // 当日原因优先，三日累计排后
+    const m = s.entries[0];
+    s.net = m.net; s.buy = m.buy; s.sell = m.sell; s.deal = m.deal; s.explain = m.explain;
+    // 同一席位可能同时出现在买五和卖五里，去重后再算机构
+    const uniq = new Map();
+    for (const r of [...m.buys, ...m.sells]) uniq.set(`${r.OPERATEDEPT_NAME}|${r.BUY}|${r.SELL}`, r);
+    s.orgNet = 0; s.hasOrg = false; s.hasHK = false;
+    for (const r of uniq.values()) {
+      if (r.OPERATEDEPT_NAME === '机构专用') { s.hasOrg = true; s.orgNet += net(r); }
+      if (/股通专用/.test(r.OPERATEDEPT_NAME)) s.hasHK = true;
+    }
+    s.seatText = s.entries.flatMap(e => [...e.buys, ...e.sells]).map(r => r.OPERATEDEPT_NAME).join('\n');
+  }
+  return [...byCode.values()];
+}
+
+// ---------- 渲染 ----------
+function renderDates() {
+  const list = S.index?.dates || [];
+  const extra = S.date && !list.some(x => x.d === S.date) ? [{ d: S.date, n: S.stocks.length }] : [];
+  $('#dates').innerHTML = [...extra, ...list].slice(0, 30).map(x =>
+    `<button class="chip${x.d === S.date ? ' on' : ''}" data-d="${x.d}"><b>${md(x.d)}</b><small>${weekday(x.d)} · ${x.n}只</small></button>`
+  ).join('');
+  $('#dates .on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+}
+
+function renderMeta() {
+  if (!S.day) return;
+  const how = S.source === 'direct' ? '直连于' : '同步于';
+  $('#meta').textContent = `${how} ${localTime(S.day.updated)}`;
+}
+
+function renderNotice() {
+  const bj = beijingNow();
+  const latest = S.index?.dates?.[0]?.d;
+  const waiting = latest && latest < bj.date && !bj.weekend && bj.hour >= 16 && S.source !== 'direct';
+  const n = $('#notice');
+  n.hidden = !waiting;
+  if (waiting) {
+    n.innerHTML = '今天（北京时间）的龙虎榜东财一般 16:30–18:00 陆续发布，本站每半小时左右自动同步。等不及可以 <button data-act="direct">直连东财</button> 试试。';
+  }
+}
+
+function renderSummary() {
+  const st = S.stocks;
+  const up = st.filter(s => s.chg > 0).length, dn = st.filter(s => s.chg < 0).length;
+  const net = st.reduce((a, s) => a + (s.net || 0), 0);
+  const orgs = st.filter(s => s.hasOrg);
+  const org = orgs.reduce((a, s) => a + s.orgNet, 0);
+  $('#summary').innerHTML = `
+    <div class="tile"><i>上榜</i><b>${st.length}只</b><small><span class="up">${up}涨</span> · <span class="dn">${dn}跌</span></small></div>
+    <div class="tile"><i>榜单净买</i><b class="${cls(net)}">${amt(net, true)}</b><small>按当日上榜口径</small></div>
+    <div class="tile"><i>机构净买</i><b class="${cls(org)}">${amt(org, true)}</b><small>${orgs.length}只有机构席位</small></div>`;
+}
+
+function visible() {
+  const q = S.q.trim().toLowerCase();
+  const f = FILTERS.find(x => x[0] === S.filter)[2];
+  let out = S.stocks.filter(f);
+  for (const s of S.stocks) s.seatHit = false;
+  if (q) {
+    out = out.filter(s => {
+      if (s.name.toLowerCase().includes(q) || s.code.startsWith(q)) return true;
+      if (s.seatText.toLowerCase().includes(q)) return (s.seatHit = true);
+      return false;
+    });
+  }
+  const [key, dir] = S.sort.split('-');
+  const val = s => ({ net: s.net, chg: s.chg, org: s.orgNet, deal: s.deal, turn: s.turn }[key] ?? -Infinity);
+  return out.sort((a, b) => (dir === 'asc' ? val(a) - val(b) : val(b) - val(a)));
+}
+
+function renderTabs() {
+  $('#tabs').innerHTML = FILTERS.map(([k, label, f]) =>
+    `<button data-f="${k}" class="${k === S.filter ? 'on' : ''}">${label}<span>${S.stocks.filter(f).length}</span></button>`
+  ).join('');
+}
+
+function seatRows(rows, q) {
+  return rows.map(r => {
+    const name = r.OPERATEDEPT_NAME || '';
+    const kind = name === '机构专用' ? 'seat-org' : /股通专用/.test(name) ? 'seat-hk' : '';
+    const hit = q && name.toLowerCase().includes(q) ? ' class="hit"' : '';
+    const n = r.NET ?? (r.BUY || 0) - (r.SELL || 0);
+    return `<tr${hit}><td class="${kind}">${esc(shortSeat(name))}</td><td>${amt(r.BUY)}</td><td>${amt(r.SELL)}</td><td class="${cls(n)}">${amt(n, true)}</td></tr>`;
+  }).join('');
+}
+
+function bodyHTML(s) {
+  const q = S.q.trim().toLowerCase();
+  const head = label => `<tr><th>${label}</th><th>买入</th><th>卖出</th><th>净额</th></tr>`;
+  return s.entries.map(e => `
+    <div class="entry">
+      <h4>${esc(e.reason)} <span>· 净 <b class="${cls(e.net)}">${amt(e.net, true)}</b> · 占成交 ${pct(e.dealRatio, false)}</span></h4>
+      <table class="seats"><colgroup><col class="n"><col><col><col></colgroup>
+        ${head('买入前五')}${seatRows(e.buys, q)}
+        ${head('卖出前五')}${seatRows(e.sells, q)}
+      </table>
+    </div>`).join('') +
+    `<a class="src" href="https://data.eastmoney.com/stock/lhb/${esc(s.code)}.html" target="_blank" rel="noopener">东财原页（可能较慢）→</a>`;
+}
+
+function cardHTML(s) {
+  const open = S.open.has(s.code) || s.seatHit;
+  const tags = (s.hasOrg ? '<span class="tag org">机构</span>' : '') + (s.hasHK ? '<span class="tag hk">股通</span>' : '');
+  const reasons = s.entries.length > 1 ? `<span class="more">+${s.entries.length - 1}个原因</span>` : '';
+  return `<article class="card" data-code="${esc(s.code)}">
+    <button class="head" aria-expanded="${open}">
+      <div class="l1"><span class="name">${esc(s.name)}</span><span class="code">${esc(s.code)}</span>${tags}<span class="chg ${cls(s.chg)}">${pct(s.chg)}</span></div>
+      <div class="l2"><span>收 ${s.close ?? '—'}</span><span>换手 ${pct(s.turn, false)}</span><span>成交 ${amt(s.amt)}</span><span>流通 ${amt(s.mcap)}</span></div>
+      <div class="l3">
+        <div class="kv"><i>净买</i><b class="${cls(s.net)}">${amt(s.net, true)}</b></div>
+        <div class="kv"><i>榜单买入</i><b>${amt(s.buy)}</b></div>
+        <div class="kv"><i>榜单卖出</i><b>${amt(s.sell)}</b></div>
+        <div class="kv"><i>机构净买</i><b class="${cls(s.orgNet)}">${s.hasOrg ? amt(s.orgNet, true) : '—'}</b></div>
+      </div>
+      <div class="why"><span>${esc(s.entries[0].reason)}</span>${reasons}${s.explain ? `<em>${esc(s.explain)}</em>` : ''}</div>
+    </button>
+    <div class="body"${open ? '' : ' hidden'}>${open ? bodyHTML(s) : ''}</div>
+  </article>`;
+}
+
+function renderList() {
+  const rows = visible();
+  $('#list').innerHTML = rows.length
+    ? rows.map(cardHTML).join('')
+    : `<div class="empty">${S.stocks.length ? '没有符合条件的股票' : '这一天没有龙虎榜数据'}</div>`;
+}
+
+function renderAll() {
+  renderMeta(); renderDates(); renderNotice(); renderSummary(); renderTabs(); renderList();
+  $('#sort').value = S.sort;
+}
+
+function showDay(day, source) {
+  S.day = day; S.date = day.date; S.source = source;
+  S.stocks = build(day); S.open.clear();
+  if (location.hash.slice(1) !== day.date) history.replaceState(null, '', '#' + day.date);
+  renderAll();
+}
+
+// ---------- 加载 ----------
+async function loadIndex() {
+  S.index = await getJSON('data/index.json', { ms: 8000, tries: 2, cache: 'no-cache' });
+}
+async function loadDay(date) {
+  const entry = S.index.dates.find(x => x.d === date) || S.index.dates[0];
+  if (!entry) throw new Error('暂无数据');
+  $('#meta').textContent = `加载 ${entry.d}…`;
+  const day = await getJSON(`data/${entry.d}.json?v=${encodeURIComponent(entry.u)}`, { ms: 12000, tries: 3 });
+  showDay(day, 'site');
+}
+async function start() {
+  try {
+    await loadIndex();
+    await loadDay(location.hash.slice(1));
+  } catch (e) {
+    $('#meta').textContent = '加载失败';
+    $('#list').innerHTML = `<div class="empty">网络不太好，没拿到数据。<br><br><button class="btn" data-act="reload">重试</button> <button class="btn" data-act="direct">直连东财</button></div>`;
+  }
+}
+
+async function direct() {
+  const btn = $('#direct');
+  btn.disabled = true; btn.textContent = '直连中…';
+  try {
+    const latest = await em({ reportName: 'RPT_DAILYBILLBOARD_DETAILSNEW', columns: 'TRADE_DATE', pageSize: 1, sortColumns: 'TRADE_DATE', sortTypes: '-1' });
+    const date = latest.data[0].TRADE_DATE.slice(0, 10);
+    const filter = `(TRADE_DATE='${date}')`;
+    const [detail, buy, sell] = await Promise.all([
+      emAll('RPT_DAILYBILLBOARD_DETAILSNEW', DETAIL_COLS, filter),
+      emAll('RPT_BILLBOARD_DAILYDETAILSBUY', SEAT_COLS, filter),
+      emAll('RPT_BILLBOARD_DAILYDETAILSSELL', SEAT_COLS, filter),
+    ]);
+    showDay({ date, updated: new Date().toISOString(), detail, buy, sell }, 'direct');
+    toast(`已直连获取 ${date}，共 ${S.stocks.length} 只`);
+  } catch (e) {
+    toast('直连失败：到东财的网络不通，稍后再试，或等本站自动同步');
+  } finally {
+    btn.disabled = false; btn.textContent = '直连东财';
+  }
+}
+
+// ---------- 交互 ----------
+document.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (chip) {
+    if (S.index) loadDay(chip.dataset.d).catch(() => toast('这一天的数据没拿到，再点一次试试'));
+    return;
+  }
+  const tab = e.target.closest('#tabs button');
+  if (tab) {
+    S.filter = tab.dataset.f; store.set('filter', S.filter);
+    renderTabs(); renderList();
+    return;
+  }
+  const head = e.target.closest('.head');
+  if (head) {
+    const card = head.parentElement, code = card.dataset.code, body = card.querySelector('.body');
+    const s = S.stocks.find(x => x.code === code);
+    const opening = body.hidden;
+    if (opening) { body.innerHTML = bodyHTML(s); S.open.add(code); } else { S.open.delete(code); }
+    body.hidden = !opening;
+    head.setAttribute('aria-expanded', opening);
+    return;
+  }
+  const act = e.target.closest('[data-act]')?.dataset.act;
+  if (act === 'direct') direct();
+  if (act === 'reload') start();
+});
+$('#direct').addEventListener('click', direct);
+$('#reload').addEventListener('click', () => { toast('刷新中…'); start(); });
+$('#sort').addEventListener('change', e => { S.sort = e.target.value; store.set('sort', S.sort); renderList(); });
+let qTimer;
+$('#q').addEventListener('input', e => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => { S.q = e.target.value; renderList(); }, 150);
+});
+window.addEventListener('hashchange', () => {
+  const d = location.hash.slice(1);
+  if (S.index && d && d !== S.date) loadDay(d).catch(() => {});
+});
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+start();
+</script>
+</body>
+</html>
