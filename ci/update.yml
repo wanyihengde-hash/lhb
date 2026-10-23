@@ -1,0 +1,42 @@
+name: 同步龙虎榜
+
+on:
+  schedule:
+    # 时间是 UTC。北京时间 = UTC+8
+    - cron: "17,47 8-9 * * 1-5"   # 北京 16:17 – 17:47，每半小时
+    - cron: "37 10-11 * * 1-5"    # 北京 18:37、19:37
+    - cron: "7 13 * * 1-5"        # 北京 21:07 收尾
+    - cron: "7 1 * * 2-6"         # 次日北京 09:07，补抓东财的更正
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "回补最近几个交易日"
+        default: "2"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+# GitHub Pages 直接发布 main 分支的 docs/，这里只要把新数据提交上去
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 拉取东财数据
+        id: fetch
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python3 scripts/fetch_lhb.py --days "${{ inputs.days || '2' }}"
+
+      - name: 提交并发布（有变化才提交）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data
+          git commit -m "data: $(date -u +%F' '%H:%M) UTC" || exit 0
+          git push
